@@ -1,82 +1,37 @@
-def pour_water_dfs(j1, j2, target, x=0, y=0, visited=None, path=None):
-    if visited is None:
-        visited = set()
+def dfs(j1, j2, t, x=0, y=0, vis=None, path=None):
+    if vis is None: vis = set()
+    if path is None: path = []
 
-    if path is None:
-        path = []
+    if (x, y) in vis: return False
+    vis.add((x, y))
 
-    if (x, y) in visited:
-        return False
+    print("Visiting:", (x, y))
 
-    visited.add((x, y))
-
-    print("Visiting:", (x, y))  # DEBUG
-
-    if x == target or y == target:
+    if x == t or y == t:
         print("\nSolution Found:")
-        for step, state in path:
-            print(step, state)
+        for a, b in path:
+            print(a, b)
         return True
 
-    # Fill Jug 1
-    if pour_water_dfs(
-        j1, j2, target, j1, y,
-        visited,
-        path + [("Fill J1", (j1, y))]
-    ):
-        return True
+    moves = [
+        ("Fill J1", (j1, y)),
+        ("Fill J2", (x, j2)),
+        ("Empty J1", (0, y)),
+        ("Empty J2", (x, 0)),
+        ("Pour 1→2", (x - min(x, j2-y), y + min(x, j2-y))),
+        ("Pour 2→1", (x + min(y, j1-x), y - min(y, j1-x)))
+    ]
 
-    # Fill Jug 2
-    if pour_water_dfs(
-        j1, j2, target, x, j2,
-        visited,
-        path + [("Fill J2", (x, j2))]
-    ):
-        return True
-
-    # Empty Jug 1
-    if pour_water_dfs(
-        j1, j2, target, 0, y,
-        visited,
-        path + [("Empty J1", (0, y))]
-    ):
-        return True
-
-    # Empty Jug 2
-    if pour_water_dfs(
-        j1, j2, target, x, 0,
-        visited,
-        path + [("Empty J2", (x, 0))]
-    ):
-        return True
-
-    # Pour Jug 1 → Jug 2
-    pour = min(x, j2 - y)
-    if pour_water_dfs(
-        j1, j2, target,
-        x - pour, y + pour,
-        visited,
-        path + [("Pour 1→2", (x - pour, y + pour))]
-    ):
-        return True
-
-    # Pour Jug 2 → Jug 1
-    pour = min(y, j1 - x)
-    if pour_water_dfs(
-        j1, j2, target,
-        x + pour, y - pour,
-        visited,
-        path + [("Pour 2→1", (x + pour, y - pour))]
-    ):
-        return True
+    for step, (nx, ny) in moves:
+        if dfs(j1, j2, t, nx, ny, vis, path + [(step, (nx, ny))]):
+            return True
 
     return False
 
 
-# MAIN PROGRAM
 j1 = int(input("Enter the capacity of Jug 1: "))
 j2 = int(input("Enter the capacity of Jug 2: "))
-target = int(input("Enter the target amount: "))
+t = int(input("Enter the target amount: "))
 
-if not pour_water_dfs(j1, j2, target):
+if not dfs(j1, j2, t):
     print("No solution")
